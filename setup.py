@@ -23,7 +23,7 @@ import glob
 
 
 def initiate(params):
-    testing = False
+    testing = True
 
     ## DON'T EDIT THIS STUFF UNLESS NEED BE
     timefactor = 1
@@ -177,6 +177,7 @@ if __name__ == "__main__":
     params['nanoseconds'] = float(raw_input('Enter simulation time (in nanoseconds): '))
     params['temp'] = float(raw_input('Enter the simulation temperature (in Kelvin): '))
     params['removeOxt'] = 'y' in raw_input('Do you want to remove terminal OXT charge? (y/n) ')
+    params['boxSize'] = float(raw_input('Enter the box padding size (in angstroms, e.g. 10): '))
     initiate(params)
     print("-"*60)
     print("-"*60)

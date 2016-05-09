@@ -89,12 +89,12 @@ quit""")
     tleapConf = """source leaprc.ff14SB
     loadAmberParams frcmod.ionsjc_tip3p
     mol = loadpdb ../startingNoh.pdb
-    solvatebox mol TIP3PBOX 10.0
+    solvatebox mol TIP3PBOX %s
     addions mol Na+ 0
     addions mol Cl- 0
     addions mol Cl- 1
     saveamberparm mol prmtop inpcrd
-    quit""" 
+    quit""" % (str(params['boxSize']))
     try:
         shutil.rmtree(newFolder)
     except:
@@ -225,12 +225,12 @@ quit""" % {'startPDB':startPDB})
     tleapConf = """source leaprc.ff14SB
 loadAmberParams frcmod.ionsjc_tip3p
 mol = loadpdb collapsed.pdb
-solvatebox mol TIP3PBOX 10.0
+solvatebox mol TIP3PBOX %s
 addions mol Na+ 0
 addions mol Cl- 0
 addions mol Cl- 1
 saveamberparm mol prmtop inpcrd
-quit"""
+quit""" % (str(params['boxSize']))
     with open("tleap.foo","w") as f:
         f.write(tleapConf)
     cmd = "tleap -f tleap.foo"
