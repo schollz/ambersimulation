@@ -60,7 +60,7 @@ mol addfile 03_Prod_reimage.mdcrd type crdbox waitfor -1
 file mkdir pdbs/
 set nf [molinfo top get numframes]
 for {set i 0} {$i < $nf} {incr i} {
-set a [atomselect top "protein and noh" frame $i]
+set a [atomselect top "all" frame $i]
 $a writepdb pdbs/$i.pdb
 }
 
