@@ -45,6 +45,14 @@ params = json.load(open('params.json','r'))
 
 def dumpPDBs():
     logger = logging.getLogger("dumpPDBs")
+
+    logger.info("Reimaging...")
+    cmd = "%(amber)s/bin/cpptraj -p %(cwd)s/prmtop.backup -i %(cwd)s/reimage.in" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
+    logger.debug("Running command '" + cmd + "'")
+    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc.wait()
+    logger.info("Reimaging finished.")
+
     with open("dump.tcl","w") as f:
         f.write("""mol new prmtop.backup type parm7
 mol addfile 03_Prod_reimage.mdcrd type crdbox waitfor -1
@@ -172,14 +180,8 @@ def runSimulation(nn):
             logger.debug("ns/day: %s, time left: %s" % (speed, timeleft))
             os.remove('foo1')
             os.remove('foo2')
+            dumpPDBs()
     logger.info("Simulation finished.")
-
-    logger.info("Reimaging...")
-    cmd = "%(amber)s/bin/cpptraj -p %(cwd)s/prmtop.backup -i %(cwd)s/reimage.in" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
-    logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
-    proc.wait()
-    logger.info("Reimaging finished.")
 
     logger.info("Dumping to pdbs/")
     dumpPDBs() # dump.py

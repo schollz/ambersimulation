@@ -101,7 +101,7 @@ def initiate(params):
        ntb=2, ntp=1, barostat=2,
        ioutfm=1,
      /
-    """ % {'temp':params['temp'],'time':params['nanoseconds']*400000/timefactor,'ntwx':int(params['nanoseconds']*400000/400/timefactor)}
+    """ % {'temp':params['temp'],'time':params['nanoseconds']*400000/timefactor,'ntwx':int(params['nanoseconds']*400000/params['numFrames']/timefactor)}
 
 
     files['03_Prod_collapse.in'] = """Typical Production MD NPT, MC Bar 4fs HMR
@@ -175,6 +175,7 @@ if __name__ == "__main__":
     params['nanoseconds'] = 10 # nanoseconds per translation setp
     params['fasta'] = raw_input('Enter the amino acid sequence (e.g. KSGGKLMN): ')
     params['nanoseconds'] = float(raw_input('Enter simulation time (in nanoseconds): '))
+    params['numFrames'] = int(raw_input('How many total frames do you want to generate (e.g. 400): '))
     params['temp'] = float(raw_input('Enter the simulation temperature (in Kelvin): '))
     params['removeOxt'] = 'y' in raw_input('Do you want to remove terminal OXT charge? (y/n) ')
     params['boxSize'] = float(raw_input('Enter the box padding size (in angstroms, e.g. 10): '))
