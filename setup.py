@@ -23,7 +23,7 @@ import glob
 
 
 def initiate(params):
-    testing = False
+    testing = True
 
     ## DON'T EDIT THIS STUFF UNLESS NEED BE
     timefactor = 1
