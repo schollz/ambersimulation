@@ -170,7 +170,7 @@ def runSimulation(nn):
     while True:
         if proc.poll() != None:
             break
-        time.sleep(10)
+        time.sleep(30)
         step += 1
         if step % 1 == 0:
             os.system("grep 'ns/day' %(cwd)s/03_Prod.mdinfo | tail -n 1 | awk '{print $4}' > foo1" % {'cwd':os.getcwd()})
@@ -180,6 +180,7 @@ def runSimulation(nn):
             logger.debug("ns/day: %s, time left: %s" % (speed, timeleft))
             os.remove('foo1')
             os.remove('foo2')
+        if step % 10 == 0:
             dumpPDBs()
     logger.info("Simulation finished.")
 
