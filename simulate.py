@@ -139,21 +139,21 @@ def runSimulation(nn):
     logger.info("Minimizing...")
     os.system('cp ../01_Min.in ./')
     cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/01_Min.in -o %(cwd)s/01_Min.out -p %(cwd)s/prmtop -c %(cwd)s/inpcrd -r %(cwd)s/01_Min.rst -inf %(cwd)s/01_Min.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     proc.wait()
 
     logger.info("Heating to %d..." % params['temp'])
     os.system('cp ../02_Heat.in ./')
     cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/02_Heat.in -o %(cwd)s/02_Heat.out -p %(cwd)s/prmtop -c %(cwd)s/01_Min.rst -r %(cwd)s/02_Heat.rst -x %(cwd)s/02_Heat.mdcrd -inf %(cwd)s/02_Heat.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     proc.wait()
 
     logger.info("Pre-production simulation...")
     os.system('cp ../025_PreProd.in ./')
     cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/025_PreProd.in -o %(cwd)s/025_PreProd.out -p %(cwd)s/prmtop -c %(cwd)s/02_Heat.rst -r %(cwd)s/025_PreProd.rst -x %(cwd)s/025_PreProd.mdcrd -inf %(cwd)s/025_PreProd.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     proc.wait()
     logger.info("Simulation finished.")
 
@@ -164,7 +164,7 @@ def runSimulation(nn):
         os.system('cp ../03_Prod_collapse.in ./03_Prod.in')
     cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/03_Prod.in -o %(cwd)s/03_Prod.out -p %(cwd)s/prmtop -c %(cwd)s/025_PreProd.rst -r %(cwd)s/03_Prod.rst -x %(cwd)s/03_Prod.mdcrd -inf %(cwd)s/03_Prod.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     # Poll process until finished
     step = 0
     while True:

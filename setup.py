@@ -179,6 +179,10 @@ if __name__ == "__main__":
     params['temp'] = float(raw_input('Enter the simulation temperature (in Kelvin): '))
     params['removeOxt'] = 'y' in raw_input('Do you want to remove terminal OXT charge? (y/n) ')
     params['boxSize'] = float(raw_input('Enter the box padding size (in angstroms, e.g. 10): '))
+    params['cudaDevice'] = raw_input('Enter which CUDA device (e.g. 0 or 1): ').strip()
+    if params['cudaDevice'] != '1':
+      params['cudaDevice'] = '0'
+
     initiate(params)
     print("-"*60)
     print("-"*60)
