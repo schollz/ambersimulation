@@ -95,14 +95,14 @@ quit""")
     newFolder = 'collapse'
     logger.info("Creating prmtop/inpcrd from sequence")
     tleapConf = """source leaprc.ff14SB
-    loadAmberParams frcmod.ionsjc_tip3p
-    mol = loadpdb ../startingNoh.pdb
-    solvatebox mol TIP3PBOX %s
-    addions mol Na+ 0
-    addions mol Cl- 0
-    addions mol Cl- 1
-    saveamberparm mol prmtop inpcrd
-    quit""" % (str(params['boxSize']))
+loadAmberParams frcmod.ionsjc_tip3p
+mol = loadpdb ../startingNoh.pdb
+solvatebox mol TIP3PBOX 15.0
+addions mol Na+ 0
+addions mol Cl- 0
+addions mol Cl- 1
+saveamberparm mol prmtop inpcrd
+quit"""
     try:
         shutil.rmtree(newFolder)
     except:
@@ -252,10 +252,10 @@ quit""" % (str(params['boxSize']))
 
     with open("reimage.in","w") as f:
         f.write("""trajin 03_Prod.mdcrd
-    trajout 03_Prod_reimage.mdcrd
-    center :1-%(last)s
-    image familiar
-    go""" % {'last':str(params['numResidues'])})
+trajout 03_Prod_reimage.mdcrd
+center :1-%(last)s
+image familiar
+go""" % {'last':str(params['numResidues'])})
 
     runSimulation('production')
 
