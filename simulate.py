@@ -196,7 +196,7 @@ def runSimulation(nn):
             logger.debug("ns/day: %s, time left: %s" % (speed, timeleft))
             os.remove('foo1')
             os.remove('foo2')
-        if step % 10 == 0:
+        if step % 100 == 0:
             dumpPDBs()
     logger.info("Simulation finished.")
 
