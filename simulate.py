@@ -41,19 +41,21 @@ baseDir = os.getcwd()
 
 from oxt import *
 
-params = json.load(open('params.json','r'))
+params = json.load(open('params.json', 'r'))
+
 
 def dumpPDBs():
     logger = logging.getLogger("dumpPDBs")
 
     logger.info("Reimaging...")
-    cmd = "%(amber)s/bin/cpptraj -p %(cwd)s/prmtop.backup -i %(cwd)s/reimage.in" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
+    cmd = "%(amber)s/bin/cpptraj -p %(cwd)s/prmtop.backup -i %(cwd)s/reimage.in" % {
+        'cwd': os.getcwd(), 'amber': os.environ['AMBERHOME']}
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     logger.info("Reimaging finished.")
 
-    with open("dump.tcl","w") as f:
+    with open("dump.tcl", "w") as f:
         f.write("""mol new prmtop.backup type parm7
 mol addfile 03_Prod_reimage.mdcrd type crdbox waitfor -1
 
@@ -68,7 +70,7 @@ quit
 """)
     cmd = "vmd -dispdev text -e dump.tcl"
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     # Dump all to one file
     os.chdir("pdbs")
@@ -79,18 +81,16 @@ quit
 def collapse():
     logger = logging.getLogger("collapse-setup")
 
-
     logger.info("Creating NOH version from linear PDB")
-    with open('vmddump','w') as f:
+    with open('vmddump', 'w') as f:
         f.write("""mol new fullSequenceLinear.pdb
 set a [atomselect top noh]
 $a writepdb startingNoh.pdb
 quit""")
     cmd = "vmd -dispdev text -e vmddump"
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     os.remove("vmddump")
-
 
     newFolder = 'collapse'
     logger.info("Creating prmtop/inpcrd from sequence")
@@ -109,11 +109,11 @@ quit"""
         pass
     os.mkdir(newFolder)
     os.chdir(newFolder)
-    with open("tleap.foo","w") as f:
+    with open("tleap.foo", "w") as f:
         f.write(tleapConf)
     cmd = "tleap -f tleap.foo"
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     os.remove("tleap.foo")
 
@@ -123,48 +123,57 @@ quit"""
     else:
         os.system('cp prmtop prmtop.backup')
 
-    os.system("%(amber)s/bin/ambpdb -p prmtop < inpcrd > startingConfiguration.pdb" % {'amber':os.environ['AMBERHOME']})
+    os.system("%(amber)s/bin/ambpdb -p prmtop < inpcrd > startingConfiguration.pdb" %
+              {'amber': os.environ['AMBERHOME']})
 
-    with open("reimage.in","w") as f:
+    with open("reimage.in", "w") as f:
         f.write("""trajin 03_Prod.mdcrd
 trajout 03_Prod_reimage.mdcrd
 center :1-%(last)s
 image familiar
-go""" % {'last':str(params['numResidues'])})
+go""" % {'last': str(params['numResidues'])})
 
     runSimulation(newFolder)
+
 
 def runSimulation(nn):
     logger = logging.getLogger(nn + '-simulation')
     logger.info("Minimizing...")
     os.system('cp ../01_Min.in ./')
-    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/01_Min.in -o %(cwd)s/01_Min.out -p %(cwd)s/prmtop -c %(cwd)s/inpcrd -r %(cwd)s/01_Min.rst -inf %(cwd)s/01_Min.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
-    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
+    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/01_Min.in -o %(cwd)s/01_Min.out -p %(cwd)s/prmtop -c %(cwd)s/inpcrd -r %(cwd)s/01_Min.rst -inf %(cwd)s/01_Min.mdinfo" % {
+        'cwd': os.getcwd(), 'amber': os.environ['AMBERHOME']}
+    proc = subprocess.Popen(shlex.split(cmd), shell=False, env=dict(
+        os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     proc.wait()
 
     logger.info("Heating to %d..." % params['temp'])
     os.system('cp ../02_Heat.in ./')
-    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/02_Heat.in -o %(cwd)s/02_Heat.out -p %(cwd)s/prmtop -c %(cwd)s/01_Min.rst -r %(cwd)s/02_Heat.rst -x %(cwd)s/02_Heat.mdcrd -inf %(cwd)s/02_Heat.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
+    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/02_Heat.in -o %(cwd)s/02_Heat.out -p %(cwd)s/prmtop -c %(cwd)s/01_Min.rst -r %(cwd)s/02_Heat.rst -x %(cwd)s/02_Heat.mdcrd -inf %(cwd)s/02_Heat.mdinfo" % {
+        'cwd': os.getcwd(), 'amber': os.environ['AMBERHOME']}
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
+    proc = subprocess.Popen(shlex.split(cmd), shell=False, env=dict(
+        os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     proc.wait()
 
     logger.info("Pre-production simulation...")
     os.system('cp ../025_PreProd.in ./')
-    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/025_PreProd.in -o %(cwd)s/025_PreProd.out -p %(cwd)s/prmtop -c %(cwd)s/02_Heat.rst -r %(cwd)s/025_PreProd.rst -x %(cwd)s/025_PreProd.mdcrd -inf %(cwd)s/025_PreProd.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
+    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/025_PreProd.in -o %(cwd)s/025_PreProd.out -p %(cwd)s/prmtop -c %(cwd)s/02_Heat.rst -r %(cwd)s/025_PreProd.rst -x %(cwd)s/025_PreProd.mdcrd -inf %(cwd)s/025_PreProd.mdinfo" % {
+        'cwd': os.getcwd(), 'amber': os.environ['AMBERHOME']}
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
+    proc = subprocess.Popen(shlex.split(cmd), shell=False, env=dict(
+        os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     proc.wait()
     logger.info("Simulation finished.")
 
-
     logger.info("Production simulation...")
     os.system('cp ../03_Prod.in ./')
-    if nn=='collapse':
+    if nn == 'collapse':
         os.system('cp ../03_Prod_collapse.in ./03_Prod.in')
-    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/03_Prod.in -o %(cwd)s/03_Prod.out -p %(cwd)s/prmtop -c %(cwd)s/025_PreProd.rst -r %(cwd)s/03_Prod.rst -x %(cwd)s/03_Prod.mdcrd -inf %(cwd)s/03_Prod.mdinfo" % {'cwd':os.getcwd(),'amber':os.environ['AMBERHOME']}
+    cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/03_Prod.in -o %(cwd)s/03_Prod.out -p %(cwd)s/prmtop -c %(cwd)s/025_PreProd.rst -r %(cwd)s/03_Prod.rst -x %(cwd)s/03_Prod.mdcrd -inf %(cwd)s/03_Prod.mdinfo" % {
+        'cwd': os.getcwd(), 'amber': os.environ['AMBERHOME']}
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False, env=dict(os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
+    proc = subprocess.Popen(shlex.split(cmd), shell=False, env=dict(
+        os.environ, CUDA_VISIBLE_DEVICES=params['cudaDevice']))
     # Poll process until finished
     step = 0
     while True:
@@ -173,10 +182,12 @@ def runSimulation(nn):
         time.sleep(30)
         step += 1
         if step % 1 == 0:
-            os.system("grep 'ns/day' %(cwd)s/03_Prod.mdinfo | tail -n 1 | awk '{print $4}' > foo1" % {'cwd':os.getcwd()})
-            os.system("""grep 'time rem' %(cwd)s/03_Prod.mdinfo | tail -n 1 | awk '{print $5" "$6}' > foo2"""  % {'cwd':os.getcwd()})
-            speed = open('foo1','r').read().strip()
-            timeleft = open('foo2','r').read().strip()
+            os.system(
+                "grep 'ns/day' %(cwd)s/03_Prod.mdinfo | tail -n 1 | awk '{print $4}' > foo1" % {'cwd': os.getcwd()})
+            os.system(
+                """grep 'time rem' %(cwd)s/03_Prod.mdinfo | tail -n 1 | awk '{print $5" "$6}' > foo2"""  % {'cwd': os.getcwd()})
+            speed = open('foo1', 'r').read().strip()
+            timeleft = open('foo2', 'r').read().strip()
             logger.debug("ns/day: %s, time left: %s" % (speed, timeleft))
             os.remove('foo1')
             os.remove('foo2')
@@ -185,8 +196,9 @@ def runSimulation(nn):
     logger.info("Simulation finished.")
 
     logger.info("Dumping to pdbs/")
-    dumpPDBs() # dump.py
+    dumpPDBs()  # dump.py
     logger.info("Finished dumping pdbs.")
+
 
 def reweightHydrogens():
     os.system('cp prmtop prmtop.backup')
@@ -201,6 +213,7 @@ go"""
     proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     os.remove("parmed.foo")
+
 
 def production():
     logger = logging.getLogger('production-setup')
@@ -218,7 +231,7 @@ def production():
     for f in files:
         if "all.pdb" in f:
             continue
-        num = int(f.split("/")[-1].replace(".pdb",""))
+        num = int(f.split("/")[-1].replace(".pdb", ""))
         if num > maxNum:
             maxNum = num
     startPDB = "%d.pdb" % maxNum
@@ -226,13 +239,13 @@ def production():
 
     logger.info("Starting PDB is %s" % (startPDB))
 
-    with open('vmddump','w') as f:
+    with open('vmddump', 'w') as f:
         f.write("""mol new %(startPDB)s
 set a [atomselect top "protein and noh"]
 $a writepdb collapsed.pdb
-quit""" % {'startPDB':startPDB})
+quit""" % {'startPDB': startPDB})
     cmd = "vmd -dispdev text -e vmddump"
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     os.remove("vmddump")
 
@@ -246,11 +259,11 @@ addions mol Cl- 0
 addions mol Cl- 1
 saveamberparm mol prmtop inpcrd
 quit""" % (str(params['boxSize']))
-    with open("tleap.foo","w") as f:
+    with open("tleap.foo", "w") as f:
         f.write(tleapConf)
     cmd = "tleap -f tleap.foo"
     logger.debug("Running command '" + cmd + "'")
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     os.remove("tleap.foo")
 
@@ -266,14 +279,15 @@ quit""" % (str(params['boxSize']))
     # else:
     #     os.system('cp prmtop prmtop.backup')
 
-    os.system("%(amber)s/bin/ambpdb -p prmtop < inpcrd > startingConfiguration.pdb" % {'amber':os.environ['AMBERHOME']})
+    os.system("%(amber)s/bin/ambpdb -p prmtop < inpcrd > startingConfiguration.pdb" %
+              {'amber': os.environ['AMBERHOME']})
 
-    with open("reimage.in","w") as f:
+    with open("reimage.in", "w") as f:
         f.write("""trajin 03_Prod.mdcrd
 trajout 03_Prod_reimage.mdcrd
 center :1-%(last)s
 image familiar
-go""" % {'last':str(params['numResidues'])})
+go""" % {'last': str(params['numResidues'])})
 
     runSimulation('production')
 
