@@ -137,12 +137,13 @@ go""" % {'last': str(params['numResidues'])})
 
 
 def runSimulation(nn):
+    logger = logging.getLogger(nn + '-simulation')
+
     # implementing hydrogen reweighting
     if params['reweighting']:
         logger.info("Re-weighting hydrogens")
         reweightHydrogens()
-        
-    logger = logging.getLogger(nn + '-simulation')
+
     logger.info("Minimizing...")
     os.system('cp ../01_Min.in ./')
     cmd = "%(amber)s/bin/pmemd.cuda -O -i %(cwd)s/01_Min.in -o %(cwd)s/01_Min.out -p %(cwd)s/prmtop -c %(cwd)s/inpcrd -r %(cwd)s/01_Min.rst -inf %(cwd)s/01_Min.mdinfo" % {
