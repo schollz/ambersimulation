@@ -4,7 +4,7 @@
 
 __author__ = "Zack Scholl"
 __copyright__ = "Copyright 2016, Duke University"
-__credits__ = ["Zack Scholl"]
+__credits__ = ["Zack Scholl", "David"]
 __license__ = "None"
 __version__ = "0.2"
 __maintainer__ = "Zack Scholl"
@@ -100,7 +100,6 @@ mol = loadpdb ../startingNoh.pdb
 solvatebox mol TIP3PBOX 15.0
 addions mol Na+ 0
 addions mol Cl- 0
-addions mol Cl- 1
 saveamberparm mol prmtop inpcrd
 quit"""
     try:
@@ -262,7 +261,6 @@ mol = loadpdb collapsed.pdb
 solvatebox mol TIP3PBOX %s
 addions mol Na+ 0
 addions mol Cl- 0
-addions mol Cl- 1
 saveamberparm mol prmtop inpcrd
 quit""" % (str(params['boxSize']))
     with open("tleap.foo", "w") as f:
