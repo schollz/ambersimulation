@@ -193,7 +193,13 @@ if __name__ == "__main__":
         'Would you like to cap the C-terminal? (y/n): ').strip().lower()
     params['reweighting'] = 'y' in raw_input(
         'Would you like to reweight the hydrogens? (y/n): ').strip().lower()
-
+    params['timestep'] = 2.5
+    if params['reweighting']:
+        timestep = raw_input('What timestep would you like (femtoseconds)? (e.g. 5)')
+        try:
+            params['timestep'] = float(timestep)
+        except:
+            print("Error parsing timestep, defaulting to %2.1f" % params['timestep'])
     initiate(params)
     print("-" * 60)
     print("-" * 60)
