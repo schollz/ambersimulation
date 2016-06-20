@@ -191,6 +191,8 @@ if __name__ == "__main__":
         params['cudaDevice'] = '0'
     params['capping'] = 'y' in raw_input(
         'Would you like to cap the C-terminal? (y/n): ').strip().lower()
+    params['reweighting'] = 'y' in raw_input(
+        'Would you like to reweight the hydrogens? (y/n): ').strip().lower()
 
     initiate(params)
     print("-" * 60)

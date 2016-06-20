@@ -255,8 +255,9 @@ quit""" % (str(params['boxSize']))
     os.remove("tleap.foo")
 
     # implementing hydrogen reweighting
-    logger.info("Re-weighting hydrogens")
-    reweightHydrogens()
+    if params['reweighting']:
+        logger.info("Re-weighting hydrogens")
+        reweightHydrogens()
 
     # Instead of removing OXT, add NHE onto your structure
     # if params['removeOxt']:
