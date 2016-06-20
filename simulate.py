@@ -6,7 +6,7 @@ __author__ = "Zack Scholl"
 __copyright__ = "Copyright 2016, Duke University"
 __credits__ = ["Zack Scholl"]
 __license__ = "None"
-__version__ = "0.1"
+__version__ = "0.2"
 __maintainer__ = "Zack Scholl"
 __email__ = "zns@duke.edu"
 __status__ = "Production"
@@ -253,16 +253,17 @@ quit""" % (str(params['boxSize']))
     proc = subprocess.Popen(shlex.split(cmd),shell=False)
     proc.wait()
     os.remove("tleap.foo")
-    
+
     # implementing hydrogen reweighting
     logger.info("Re-weighting hydrogens")
     reweightHydrogens()
-    
-    if params['removeOxt']:
-        logger.info("Removing OXT charge...")
-        removeCharge()
-    else:
-        os.system('cp prmtop prmtop.backup')
+
+    # Instead of removing OXT, add NHE onto your structure
+    # if params['removeOxt']:
+    #     logger.info("Removing OXT charge...")
+    #     removeCharge()
+    # else:
+    #     os.system('cp prmtop prmtop.backup')
 
     os.system("%(amber)s/bin/ambpdb -p prmtop < inpcrd > startingConfiguration.pdb" % {'amber':os.environ['AMBERHOME']})
 

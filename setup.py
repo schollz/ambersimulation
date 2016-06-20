@@ -25,10 +25,10 @@ import glob
 def initiate(params):
     testing = False
 
-    ## DON'T EDIT THIS STUFF UNLESS NEED BE
+    # DON'T EDIT THIS STUFF UNLESS NEED BE
     timefactor = 1
     if testing:
-        timefactor = 10 # 1 = normal, 100 = testing
+        timefactor = 10  # 1 = normal, 100 = testing
 
     files = {}
     files['01_Min.in'] = """Minimize
@@ -42,7 +42,7 @@ def initiate(params):
       ntwx=0,
       cut=8.0,
      /
-    """ % {"maxcyc":2000/timefactor, "ncyc":1000/timefactor, "ntpr":100/timefactor}
+    """ % {"maxcyc": 2000 / timefactor, "ncyc": 1000 / timefactor, "ntpr": 100 / timefactor}
 
     files['02_Heat.in'] = """Heat
      &cntrl
@@ -68,8 +68,7 @@ def initiate(params):
     &wt type='TEMP0', istep1=0, istep2=%(istep2)d, value1=0.0, value2=%(temp)s /
     &wt type='TEMP0', istep1=%(istep1)d, istep2=%(nstlim)d, value1=%(temp)s, value2=%(temp)s /
     &wt type='END' /
-    """ % {'temp':str(params['temp']), "nstlim":10000/timefactor, "istep2":9000/timefactor, "istep1":1+9000/timefactor}
-
+    """ % {'temp': str(params['temp']), "nstlim": 10000 / timefactor, "istep2": 9000 / timefactor, "istep1": 1 + 9000 / timefactor}
 
     files['025_PreProd.in'] = """Typical Production MD NPT, MC Bar 4fs HMR
      &cntrl
@@ -84,9 +83,7 @@ def initiate(params):
        ntb=2, ntp=1, barostat=2,
        ioutfm=1,
      /
-    """ % {'temp':params['temp']}
-
-
+    """ % {'temp': params['temp']}
 
     files['03_Prod.in'] = """Typical Production MD NPT, MC Bar 4fs HMR
      &cntrl
@@ -101,8 +98,7 @@ def initiate(params):
        ntb=2, ntp=1, barostat=2,
        ioutfm=1,
      /
-    """ % {'temp':params['temp'],'time':params['nanoseconds']*400000/timefactor,'ntwx':int(params['nanoseconds']*400000/params['numFrames']/timefactor)}
-
+    """ % {'temp': params['temp'], 'time': params['nanoseconds'] * 400000 / timefactor, 'ntwx': int(params['nanoseconds'] * 400000 / params['numFrames'] / timefactor)}
 
     files['03_Prod_collapse.in'] = """Typical Production MD NPT, MC Bar 4fs HMR
      &cntrl
@@ -117,11 +113,11 @@ def initiate(params):
        ntb=2, ntp=1, barostat=2,
        ioutfm=1,
      /
-    """ % {'temp':params['temp'],'time':2*400000/timefactor,'ntwx':int(2*400000/10/timefactor)}
-
+    """ % {'temp': params['temp'], 'time': 2 * 400000 / timefactor, 'ntwx': int(2 * 400000 / 10 / timefactor)}
 
     # Load amino acid translator
-    trans = dict((s,l.upper()) for l, s in [row.strip().split() for row in open("table").readlines()])
+    trans = dict((s, l.upper()) for l, s in [
+                 row.strip().split() for row in open("table").readlines()])
 
     # Load fasta seqeuence
     src = ""
@@ -129,25 +125,28 @@ def initiate(params):
         if ">" in line:
             continue
         src = src + line.strip()
-    src = src.replace(" ","")
+    src = src.replace(" ", "")
 
     # Convert 1-letter code to 3-letter code
     src = src.upper()
     seq = []
     for s in list(src):
-      seq.append(trans[s])
+        seq.append(trans[s])
 
     params['fullSequence'] = ' '.join(seq)
+
+    if params['capping']:
+        params['fullSequence'] += ' NHE'
 
     tleapConf = """source leaprc.ff14SB
     loadAmberParams frcmod.ionsjc_tip3p
     mol = sequence { %s }
     saveamberparm mol prmtop inpcrd
     quit""" % params['fullSequence']
-    with open("tleap.foo","w") as f:
+    with open("tleap.foo", "w") as f:
         f.write(tleapConf)
     cmd = "tleap -f tleap.foo"
-    proc = subprocess.Popen(shlex.split(cmd),shell=False)
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     os.system("$AMBERHOME/bin/ambpdb -p prmtop < inpcrd > fullSequenceLinear.pdb")
     os.remove("prmtop")
@@ -155,38 +154,46 @@ def initiate(params):
     os.remove("tleap.foo")
 
     for f in files:
-        with open(f,'w') as f2:
+        with open(f, 'w') as f2:
             f2.write(files[f])
-    params['numResidues'] = len(params['fullSequence'].replace(' ',''))/3
-    with open('params.json','w') as f:
-        f.write(json.dumps(params))
-
+    params['numResidues'] = len(params['fullSequence'].replace(' ', '')) / 3
+    with open('params.json', 'w') as f:
+        f.write(json.dumps(params, indent=2))
 
 
 if __name__ == "__main__":
     params = {}
-    params['chopPoints'] = list(range(16,53,4))
+    params['chopPoints'] = list(range(16, 53, 4))
     params['fasta'] = """>2P6J:A|PDBID|CHAIN|SEQUENCE
     MKQWSENVEEKLK
     """
-    #EFVKRHQRITQEELHQYAQRLGLNEEAIRQFFEEFEQRK
+    # EFVKRHQRITQEELHQYAQRLGLNEEAIRQFFEEFEQRK
     params['temp'] = 360.0
-    params['method'] = 'last' # rmsd, ss, last
-    params['nanoseconds'] = 10 # nanoseconds per translation setp
-    params['fasta'] = raw_input('Enter the amino acid sequence (e.g. KSGGKLMN): ')
-    params['nanoseconds'] = float(raw_input('Enter simulation time (in nanoseconds): '))
-    params['numFrames'] = int(raw_input('How many total frames do you want to generate (e.g. 400): '))
-    params['temp'] = float(raw_input('Enter the simulation temperature (in Kelvin): '))
-    params['removeOxt'] = 'y' in raw_input('Do you want to remove terminal OXT charge? (y/n) ')
-    params['boxSize'] = float(raw_input('Enter the box padding size (in angstroms, e.g. 10): '))
-    params['cudaDevice'] = raw_input('Enter which CUDA device (e.g. 0 or 1): ').strip()
+    params['method'] = 'last'  # rmsd, ss, last
+    params['nanoseconds'] = 10  # nanoseconds per translation setp
+    params['fasta'] = raw_input(
+        'Enter the amino acid sequence (e.g. KSGGKLMN): ')
+    params['nanoseconds'] = float(
+        raw_input('Enter simulation time (in nanoseconds): '))
+    params['numFrames'] = int(
+        raw_input('How many total frames do you want to generate (e.g. 400): '))
+    params['temp'] = float(
+        raw_input('Enter the simulation temperature (in Kelvin): '))
+    # DEPRECATED
+    # params['removeOxt'] = 'y' in raw_input(
+    #     'Do you want to remove terminal OXT charge? (y/n) ')
+    params['removeOxt'] = False
+    params['boxSize'] = float(
+        raw_input('Enter the box padding size (in angstroms, e.g. 10): '))
+    params['cudaDevice'] = raw_input(
+        'Enter which CUDA device (e.g. 0 or 1): ').strip()
     if params['cudaDevice'] != '1':
-      params['cudaDevice'] = '0'
+        params['cudaDevice'] = '0'
+    params['capping'] = 'y' in raw_input(
+        'Would you like to cap the C-terminal? (y/n): ').strip().lower()
 
     initiate(params)
-    print("-"*60)
-    print("-"*60)
+    print("-" * 60)
+    print("-" * 60)
     print("\n\n\nSetup complete!\n\nNow just run:\n\n      nohup python simulate.py &\n\n\nand then use\n")
     print("      tail -f log    \n\nto watch the log.")
-    
-
