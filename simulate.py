@@ -188,7 +188,19 @@ def runSimulation(nn):
     dumpPDBs() # dump.py
     logger.info("Finished dumping pdbs.")
 
-
+def reweightHydrogens():
+    os.system('cp prmtop prmtop.backup')
+    os.system('cp inpcrd inpcrd.backup')
+    tleapConf = """setOverwrite true
+HMassRepartition 3
+outparm prmtop inpcrd
+go"""
+    with open("parmed.foo", "w") as f:
+        f.write(tleapConf)
+    cmd = "parmed.py -p prmtop -c inpcrd -O -i parmed.foo"
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
+    proc.wait()
+    os.remove("parmed.foo")
 
 def production():
     logger = logging.getLogger('production-setup')
@@ -241,7 +253,11 @@ quit""" % (str(params['boxSize']))
     proc = subprocess.Popen(shlex.split(cmd),shell=False)
     proc.wait()
     os.remove("tleap.foo")
-
+    
+    # implementing hydrogen reweighting
+    logger.info("Re-weighting hydrogens")
+    reweightHydrogens()
+    
     if params['removeOxt']:
         logger.info("Removing OXT charge...")
         removeCharge()
