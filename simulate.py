@@ -137,6 +137,11 @@ go""" % {'last': str(params['numResidues'])})
 
 
 def runSimulation(nn):
+    # implementing hydrogen reweighting
+    if params['reweighting']:
+        logger.info("Re-weighting hydrogens")
+        reweightHydrogens()
+        
     logger = logging.getLogger(nn + '-simulation')
     logger.info("Minimizing...")
     os.system('cp ../01_Min.in ./')
@@ -267,10 +272,6 @@ quit""" % (str(params['boxSize']))
     proc.wait()
     os.remove("tleap.foo")
 
-    # implementing hydrogen reweighting
-    if params['reweighting']:
-        logger.info("Re-weighting hydrogens")
-        reweightHydrogens()
 
     # Instead of removing OXT, add NHE onto your structure
     # if params['removeOxt']:
