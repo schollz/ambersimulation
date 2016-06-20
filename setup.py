@@ -32,88 +32,88 @@ def initiate(params):
 
     files = {}
     files['01_Min.in'] = """Minimize
-     &cntrl
-      imin=1,
-      ntx=1,
-      irest=0,
-      maxcyc=%(maxcyc)d,
-      ncyc=%(ncyc)d,
-      ntpr=%(ntpr)d,
-      ntwx=0,
-      cut=8.0,
-     /
+ &cntrl
+  imin=1,
+  ntx=1,
+  irest=0,
+  maxcyc=%(maxcyc)d,
+  ncyc=%(ncyc)d,
+  ntpr=%(ntpr)d,
+  ntwx=0,
+  cut=8.0,
+ /
     """ % {"maxcyc": 2000 / timefactor, "ncyc": 1000 / timefactor, "ntpr": 100 / timefactor}
 
     files['02_Heat.in'] = """Heat
-     &cntrl
-      imin=0,
-      ntx=1,
-      irest=0,
-      nstlim=%(nstlim)d,
-      dt=0.002,
-      ntf=2,
-      ntc=2,
-      tempi=0.0,
-      temp0=%(temp)s,
-      ntpr=100,
-      ntwx=100,
-      cut=8.0,
-      ntb=1,
-      ntp=0,
-      ntt=3,
-      gamma_ln=2.0,
-      nmropt=1,
-      ig=-1,
-     /
-    &wt type='TEMP0', istep1=0, istep2=%(istep2)d, value1=0.0, value2=%(temp)s /
-    &wt type='TEMP0', istep1=%(istep1)d, istep2=%(nstlim)d, value1=%(temp)s, value2=%(temp)s /
-    &wt type='END' /
-    """ % {'temp': str(params['temp']), "nstlim": 10000 / timefactor, "istep2": 9000 / timefactor, "istep1": 1 + 9000 / timefactor}
+ &cntrl
+  imin=0,
+  ntx=1,
+  irest=0,
+  nstlim=%(nstlim)d,
+  dt=0.00%(timestep)d,
+  ntf=2,
+  ntc=2,
+  tempi=0.0,
+  temp0=%(temp)s,
+  ntpr=100,
+  ntwx=100,
+  cut=8.0,
+  ntb=1,
+  ntp=0,
+  ntt=3,
+  gamma_ln=2.0,
+  nmropt=1,
+  ig=-1,
+ /
+&wt type='TEMP0', istep1=0, istep2=%(istep2)d, value1=0.0, value2=%(temp)s /
+&wt type='TEMP0', istep1=%(istep1)d, istep2=%(nstlim)d, value1=%(temp)s, value2=%(temp)s /
+&wt type='END' /
+    """ % {'timestep': str(int(params['timestep'] * 10)), 'temp': str(params['temp']), "nstlim": 10000 / timefactor, "istep2": 9000 / timefactor, "istep1": 1 + 9000 / timefactor}
 
     files['025_PreProd.in'] = """Typical Production MD NPT, MC Bar 4fs HMR
-     &cntrl
-       ntx=5, irest=1,
-       ntc=2, ntf=2,
-       nstlim=10000,
-       ntpr=200, ntwx=500,
-       ntwr=200,
-       dt=0.0025, cut=9.5,
-       ntt=1, tautp=10.0,
-       temp0=%(temp)d,
-       ntb=2, ntp=1, barostat=2,
-       ioutfm=1,
-     /
-    """ % {'temp': params['temp']}
+ &cntrl
+   ntx=5, irest=1,
+   ntc=2, ntf=2,
+   nstlim=10000,
+   ntpr=200, ntwx=500,
+   ntwr=200,
+   dt=0.00%(timestep)d, cut=9.5,
+   ntt=1, tautp=10.0,
+   temp0=%(temp)d,
+   ntb=2, ntp=1, barostat=2,
+   ioutfm=1,
+ /
+    """ % {'timestep': str(int(params['timestep'] * 10)), 'temp': params['temp']}
 
     files['03_Prod.in'] = """Typical Production MD NPT, MC Bar 4fs HMR
-     &cntrl
-       ntx=5, irest=1,
-       ntc=2, ntf=2,
-       nstlim=%(time)d,
-       ntpr=1000, ntwx=%(ntwx)d,
-       ntwr=10000,
-       dt=0.0025, cut=9.5,
-       ntt=1, tautp=10.0,
-       temp0=%(temp)d,
-       ntb=2, ntp=1, barostat=2,
-       ioutfm=1,
-     /
-    """ % {'temp': params['temp'], 'time': params['nanoseconds'] * 400000 / timefactor, 'ntwx': int(params['nanoseconds'] * 400000 / params['numFrames'] / timefactor)}
+ &cntrl
+   ntx=5, irest=1,
+   ntc=2, ntf=2,
+   nstlim=%(time)d,
+   ntpr=1000, ntwx=%(ntwx)d,
+   ntwr=10000,
+   dt=0.00%(timestep)d, cut=9.5,
+   ntt=1, tautp=10.0,
+   temp0=%(temp)d,
+   ntb=2, ntp=1, barostat=2,
+   ioutfm=1,
+ /
+    """ % {'timestep': str(int(params['timestep'] * 10)), 'temp': params['temp'], 'time': params['nanoseconds'] * 400000 / timefactor, 'ntwx': int(params['nanoseconds'] * 400000 / params['numFrames'] / timefactor)}
 
     files['03_Prod_collapse.in'] = """Typical Production MD NPT, MC Bar 4fs HMR
-     &cntrl
-       ntx=5, irest=1,
-       ntc=2, ntf=2,
-       nstlim=%(time)d,
-       ntpr=1000, ntwx=%(ntwx)d,
-       ntwr=10000,
-       dt=0.0025, cut=9.5,
-       ntt=1, tautp=10.0,
-       temp0=%(temp)d,
-       ntb=2, ntp=1, barostat=2,
-       ioutfm=1,
-     /
-    """ % {'temp': params['temp'], 'time': 2 * 400000 / timefactor, 'ntwx': int(2 * 400000 / 10 / timefactor)}
+ &cntrl
+   ntx=5, irest=1,
+   ntc=2, ntf=2,
+   nstlim=%(time)d,
+   ntpr=1000, ntwx=%(ntwx)d,
+   ntwr=10000,
+   dt=0.00%(timestep)d, cut=9.5,
+   ntt=1, tautp=10.0,
+   temp0=%(temp)d,
+   ntb=2, ntp=1, barostat=2,
+   ioutfm=1,
+ /
+    """ % {'timestep': str(int(params['timestep'] * 10)), 'temp': params['temp'], 'time': 2 * 400000 / timefactor, 'ntwx': int(2 * 400000 / 10 / timefactor)}
 
     # Load amino acid translator
     trans = dict((s, l.upper()) for l, s in [
@@ -139,10 +139,10 @@ def initiate(params):
         params['fullSequence'] += ' NHE'
 
     tleapConf = """source leaprc.ff14SB
-    loadAmberParams frcmod.ionsjc_tip3p
-    mol = sequence { %s }
-    saveamberparm mol prmtop inpcrd
-    quit""" % params['fullSequence']
+loadAmberParams frcmod.ionsjc_tip3p
+mol = sequence { %s }
+saveamberparm mol prmtop inpcrd
+quit""" % params['fullSequence']
     with open("tleap.foo", "w") as f:
         f.write(tleapConf)
     cmd = "tleap -f tleap.foo"
@@ -165,8 +165,8 @@ if __name__ == "__main__":
     params = {}
     params['chopPoints'] = list(range(16, 53, 4))
     params['fasta'] = """>2P6J:A|PDBID|CHAIN|SEQUENCE
-    MKQWSENVEEKLK
-    """
+MKQWSENVEEKLK
+"""
     # EFVKRHQRITQEELHQYAQRLGLNEEAIRQFFEEFEQRK
     params['temp'] = 360.0
     params['method'] = 'last'  # rmsd, ss, last
@@ -195,11 +195,13 @@ if __name__ == "__main__":
         'Would you like to reweight the hydrogens? (y/n): ').strip().lower()
     params['timestep'] = 2.5
     if params['reweighting']:
-        timestep = raw_input('What timestep would you like (femtoseconds)? (e.g. 5)')
+        timestep = raw_input(
+            'What timestep would you like (femtoseconds)? (e.g. 5): ')
         try:
             params['timestep'] = float(timestep)
         except:
-            print("Error parsing timestep, defaulting to %2.1f" % params['timestep'])
+            print("Error parsing timestep, defaulting to %2.1f" %
+                  params['timestep'])
     initiate(params)
     print("-" * 60)
     print("-" * 60)
