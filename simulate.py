@@ -77,6 +77,33 @@ quit
     os.system("cat `ls -tr` > ../all.pdb")
     os.chdir("../")
 
+    ## DUMP CA for longer trajectories
+    try:
+        os.system("rm -rf pdbsCA")
+    except:
+        pass
+    os.system("mkdir pdbsCA")
+    with open("dumpCA.tcl", "w") as f:
+        f.write("""mol new prmtop.backup type parm7
+mol addfile 03_Prod_reimage.mdcrd type crdbox waitfor -1
+
+set nf [molinfo top get numframes]
+for {set i 0} {$i < $nf} {incr i} {
+set a [atomselect top "name CA" frame $i]
+$a writepdb pdbsCA/$i.pdb
+}
+
+quit
+""")
+    cmd = "vmd -dispdev text -e dumpCA.tcl"
+    logger.debug("Running command '" + cmd + "'")
+    proc = subprocess.Popen(shlex.split(cmd), shell=False)
+    proc.wait()
+    # Dump all to one file
+    os.chdir("pdbsCA")
+    os.system("cat `ls -tr` > ../allCA.pdb")
+    os.chdir("../")
+
 
 def collapse():
     logger = logging.getLogger("collapse-setup")
