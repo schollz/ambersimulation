@@ -138,7 +138,7 @@ def initiate(params):
     if params['capping']:
         params['fullSequence'] += ' NHE'
 
-    tleapConf = """source leaprc.ff14SB
+    tleapConf = """source leaprc.protein.ff14SB
 loadAmberParams frcmod.ionsjc_tip3p
 mol = sequence { %s }
 saveamberparm mol prmtop inpcrd

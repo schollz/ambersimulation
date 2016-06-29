@@ -121,7 +121,8 @@ quit""")
 
     newFolder = 'collapse'
     logger.info("Creating prmtop/inpcrd from sequence")
-    tleapConf = """source leaprc.ff14SB
+    tleapConf = """source leaprc.protein.ff14SB
+source leaprc.water.tip3p
 loadAmberParams frcmod.ionsjc_tip3p
 mol = loadpdb ../startingNoh.pdb
 solvatebox mol TIP3PBOX 15.0
@@ -241,7 +242,7 @@ outparm prmtop inpcrd
 go"""
     with open("parmed.foo", "w") as f:
         f.write(tleapConf)
-    cmd = "parmed.py -p prmtop -c inpcrd -O -i parmed.foo"
+    cmd = "parmed -p prmtop -c inpcrd -O -i parmed.foo"
     proc = subprocess.Popen(shlex.split(cmd), shell=False)
     proc.wait()
     os.remove("parmed.foo")
@@ -282,7 +283,8 @@ quit""" % {'startPDB': startPDB})
     os.remove("vmddump")
 
     logger.info("Creating prmtop/inpcrd from sequence")
-    tleapConf = """source leaprc.ff14SB
+    tleapConf = """source leaprc.protein.ff14SB
+source leaprc.water.tip3p
 loadAmberParams frcmod.ionsjc_tip3p
 mol = loadpdb collapsed.pdb
 solvatebox mol TIP3PBOX %s
